@@ -1,24 +1,23 @@
 import tensorflow as tf
+import utils
 class SR(object):
-	def __init__(self,
-				 hidden_size,
-				 bottleneck_size,
-				 learning_rate,
-				 learning_rate_decay_factor,
-				 optimizer='adam',
-				 dtype=tf.float32,
-				 scope='SR'
-				):
-		self.hidden_size=hidden_size
-		self.bottleneck_size=bottleneck_size
-		self.learning_rate=learning_rate
-		self.learning_rate_decay_factor=learning_rate_decay_factor
-		self.optimizer=optimizer
-		self.dtype=dtype
-
-		with tf.variable_scope(scope):
+    def __init__(self,
+                 hidden_size,
+                 bottleneck_size,
+                 learning_rate,
+                 optimizer='adam',
+                 dtype=tf.float32,
+                 scope='SR',
+         scale
+                ):
+        self.hidden_size=hidden_size
+        self.bottleneck_size=bottleneck_size
+        self.learning_rate=learning_rate
+        self.optimizer=optimizer
+        self.dtype=dtype
+        self.scale=scale
+        with tf.variable_scope(scope):
             self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=dtype, name='learning_rate')
-            self.learning_rate_decay_op = self.learning_rate.assign(self.learning_rate * learning_rate_decay_factor)
             self.global_step = tf.Variable(0, trainable=False, dtype=tf.int32, name='global_step')
 
             self.build_graph()
@@ -26,35 +25,53 @@ class SR(object):
             self.saver = tf.train.Saver(max_to_keep=10)
 
     def build_graph(self,input):
-    	self._create_placeholder()
+        self._create_placeholder()
         self._create_loss(input)
         self._create_optimizer()
 
     def _create_placeholder(self):
-    	pass
+        pass
+        self.input=tf.placeholder(tf.float32,[None,None,None,3],name='input')
+        self.target=tf.placeholder(tf.float32,[None,None,None,3],name='output')
+    
+    def _create_loss(self):
+        pass
+        x=tf.layers.conv2d(self.input,hidden_size,1,activation=tf.nn.relu,name='in')
+        
+        #low resolution
+        for i in range(6)
+            x=utils.crop_by_pixel(x,1)+conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(i))
 
-    def _create_loss(self,input):
-    	pass
-    	x=tf.layers.conv2d(input,hidden_size,1,activation=None,name='input')
-    	
-    	#low resolution
-    	for i in range(6)
-    		x=x+conv(x,self.hidden_size,bottleneck_size,'lr_conv'+str(i))
+        #up sampling
+        x=tf.image.resize_nearest_neighbor(x,tf.shape(x)[1:3]*2)+tf.layers.conv2d_transpose(temp,hidden_size,2,strides=2,name='up_sampling')
 
-    	#up sampling
-    	temp=tf.nn.relu(x)
-    	x=tf.image.resize_nearest_neighbor(x,tf.shape(x)[1:3]*2)+tf.layers.conv2d_transpose(temp,hidden_size,2,strides=2,name='up_sampling')
+        #high resolution
+        for i in range(4)
+            x=utils.crop_by_pixel(x,1)+conv(x,self.hidden_size,self.bottleneck_size,'hr_conv'+str(i))
+        self.prediction=tf.layers.conv2d(x,3,1,name='out')
+        self.loss = tf.losses.mean_squared_error(self.target, self.prediction)
 
-    	#high resolution
+    def _create_optimizer(self):
+        pass
+        #you can put more optimizer here
+        if(self.optimizer=='adam'):
+            optimizer=tf.train.AdamOptimizer(self.learning_rate)
+        self.updates=optimizer.minimize(self.loss,self.global_step)
 
+    def conv(x,hidden_size,bottleneck_size,name):
+        x=tf.layers.conv2d(x,bottleneck_size,1,activation=tf.nn.relu,name=name+'_proj')
+        x=tf.layers.conv2d(x,hidden_size,3,activation=tf.nn.relu,name=name+'_filt')
 
+        return x
 
-   	def _create_optimizer(self):
-   		pass
+    def step(self.session,input,target,training):
+        input_feed={}
+        input_feed[self.input.name]=input
+        input_feed[self.target.name]=target
+        if training:
+            output_feed=[self.prediction,self.loss,self.updates]
+        else:
+            output_feed=[self.prediction,self.loss]
 
-   	def conv(x,hidden_size,bottleneck_size,name):
-   		x=tf.nn.relu(x)
-   		x=tf.layers.conv2d(x,bottleneck_size,1,activation=tf.nn.relu,name=name+'_proj')
-   		x=tf.layers.conv2d(x,hidden_size,3,activation=None,name=name+'_filt',padding='same')
-
-   		return x
+        outputs=session.run(output_feed,input_feed)
+        return outputs[0],outputs[1]
