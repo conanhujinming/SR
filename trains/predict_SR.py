@@ -7,7 +7,6 @@ data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(data_path)
 
 from models.SR import SR
-import utils.data
 import utils.utils
 flags=tf.app.flags
 
@@ -24,6 +23,17 @@ flags.DEFINE_integer('scale',2,'hr=lr*scale')
 
 flags.DEFINE_integer('hidden_size',128,'hidden size')
 flags.DEFINE_integer('bottleneck_size',64,'bottleneck size')
+
+#input an image dir
+#output the array of the image
+def get_data(path):
+    pass
+    im=im=Image.open(path)
+    data=np.array(im)
+    lr=np.zeros([1,512,512,3],dtype=np.float32)
+    lr[0,:,:,:]=data
+    lr-=128
+    return lr
 
 #input_data:lr_image
 #target_data:hr_image
@@ -68,18 +78,10 @@ def train():
         #_,training_loss=model.step(sess,input_batch,target_batch,training=True)
         prediction,_=model.step(sess,input_batch,target_batch,training=True)
         pass
-        #TODO
         out_im = Image.fromarray(lr.astype(np.uint8))
         out_im.save(test_data_out_path)
 
-#input an image dir
-#output the array of the image
-def get_data(path):
-    pass
-    im=im=Image.open(path)
-    data=np.array(im)
-    data-=0.5
-    return data
+
 
 def main(_):
     train()

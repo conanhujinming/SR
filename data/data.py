@@ -8,7 +8,7 @@ class Dataset(object):
     def __init__(self, path):
         pass
         self.input_croped,self.target_croped,self.num_train=self.read_data(path)
-        self.input_croped-=0.5
+        self.input_croped-=128
         self.epoch=0
         self.index_in_epoch=0
     def next_batch(self,batch_size):
@@ -33,5 +33,7 @@ class Dataset(object):
         hr=np.load(hr_path)
         print('read data complete.')
         return lr,hr,lr.shape[0]
+
+    #used for testing
     def get_data(self):
         return self.input_croped,self.target_croped

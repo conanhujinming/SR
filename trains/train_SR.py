@@ -3,19 +3,18 @@ import numpy as np
 import os,sys
 import math
 
-data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(data_path)
+parent_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_path)
 
 from models.SR import SR
-import utils.data
-import utils.utils
+from utils import utils
+from data import data
 flags=tf.app.flags
 
-flags.DEFINE_string('data_path','data/Data/','input data path')
-flags.DEFINE_string('dataset','game','choose a dataset')
-flags.DEFINE_integer('iterations',1000,'number of iterations')
+flags.DEFINE_string('data_path','/home/chenchen/data/dataset_scene/','input data path')
+flags.DEFINE_integer('iterations',100000,'number of iterations')
 flags.DEFINE_integer('batch_size','32','batch size')
-flags.DEFINE_string('train_dir','ckpt/SR/','model save path')
+flags.DEFINE_string('train_dir','../ckpt/SR/','model save path')
 flags.DEFINE_string('data_output_path','data/Output_data','output data path')
 flags.DEFINE_integer('verbose',10,'show performance per X iterations')
 flags.DEFINE_float('learning_rate','0.001','learning rate for training')
@@ -56,13 +55,13 @@ def train():
     if not os.path.exists(ckpt_path):
         os.makedirs(ckpt_path)
     
-    dataset=data.Dataset(flags.data_path+flags.dataset,flags.scale)
+    dataset=data.Dataset(flags.data_path)
     #target_batch,input_batch=dataset.get_batch(flags.batch_size)
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model=create_model(ckpt_path,flags.optimizer,sess)
-        itr_print=1000
-        itr_save=10000
+        itr_print=flags.verbose
+        itr_save=1000
         loss=0
         for itr in xrange(flags.iterations):
             target_batch,input_batch=dataset.get_batch(flags.batch_size)
