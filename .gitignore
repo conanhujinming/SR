@@ -1,7 +1,7 @@
 *.pyc
-checkpoint
-*.ckpt
+*checkpoint
+*ckpt
 *.meta
 *.bmp
-test_load.py
-test_save.py
+*test_load.py
+*test_save.py
