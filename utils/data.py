@@ -2,29 +2,7 @@ import scipy.sparse as sp
 import numpy as np
 import os.path
 from PIL import Image
-num=240
-idx=0
-hr=np.zeros(num*8,1000,1000,3)
-lr=np.zeros(num*8,500,500,3)
-#read_data
-for parent,dirnames,filenames in os.walk(path):
-for dirname in dirnames:
-    image_name=os.path.join(parent,dirname)
-        im=Image.open(image_name)
-        im_flip=im.transpose(Image.FLIP_LEFT_RIGHT)
-        data=np.array(im)
-        data_flip=np.array(im_flip)
-        lr[idx,:,:,:]=data
-        idx+=1
-        for i in xrange(3):
-            data=np.rot90(data)
-            lr[idx,:,:,:]=data
-            idx+=1
-            print idx
-print('read data complete.')
-
-
-
+class Dataset(object):
 
     def __init__(self, path):
         pass
@@ -46,27 +24,22 @@ print('read data complete.')
         return self.input_croped[start:end],self.target_croped[start:end]
     def read_data(self,path):
         pass
-        num=240
-        idx=0
-        hr=np.zeros(num*8,1000,1000,3)
-        lr=np.zeros(num*8,500,500,3)
-        #read_data
-        for parent,dirnames,filenames in os.walk(path):
-            for dirname in dirnames:
-                image_name=os.path.join(parent,dirname)
-                im=Image.open(image_name)
-                im_flip=im.transpose(Image.FLIP_LEFT_RIGHT)
-                data=np.array(im)
-                data_flip=np.array(im_flip)
-                lr[idx,:,:,:]=data
-                idx+=1
-                for i in xrange(3):
-                    data=np.rot90(data)
-                    lr[idx,:,:,:]=data
-                    idx+=1
-
-                print idx
+        lr_path=os.path.join(path,'lr.mat')
+        hr_path=os.path.join(path,'hr.mat')
+        lr=loadmat(lr_path)
+        hr=loadmat(hr_path)
         print('read data complete.')
-
-
+        lr_crop,hr_crop=crop(lr,hr)
+        return lr_crop,hr_crop
+    def crop(lr_in,hr_in)
+        scale=2
+        height=108
+        width=108
+        overlap=12
+        hr_crop = tf.extract_image_patches(hr, [1, height, width, 1], [1, height - 2 * overlap, width - 2 * overlap, 1], [1, 1, 1, 1], padding='VALID')
+        hr_reshape=tf.reshape(hr_crop, [tf.shape(hr_crop)[0] * tf.shape(hr_crop)[1] * tf.shape(hr_crop)[2], height, width, 3])
+        lr_crop = tf.extract_image_patches(lr, [1, height/scale, width/scale, 1], [1, height/scale - 2 * overlap/scale, width/scale - 2 * overlap/scale, 1], [1, 1, 1, 1], padding='VALID')
+        lr_reshape=tf.reshape(lr_crop, [tf.shape(lr_crop)[0] * tf.shape(lr_crop)[1] * tf.shape(lr_crop)[2], height/scale, width/scale, 3])
+        sess = tf.Session()
+        return sess.run([lr_reshape,hr_reshape],{lr:lr_in,hr:hr_in})
 
