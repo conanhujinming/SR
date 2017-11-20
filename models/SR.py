@@ -1,5 +1,5 @@
 import tensorflow as tf
-import utils
+from utils import utils
 class SR(object):
     def __init__(self,
                  hidden_size,
@@ -8,7 +8,7 @@ class SR(object):
                  optimizer='adam',
                  dtype=tf.float32,
                  scope='SR',
-         scale
+                 scale=2
                 ):
         self.hidden_size=hidden_size
         self.bottleneck_size=bottleneck_size
@@ -24,9 +24,9 @@ class SR(object):
 
             self.saver = tf.train.Saver(max_to_keep=10)
 
-    def build_graph(self,input):
+    def build_graph(self):
         self._create_placeholder()
-        self._create_loss(input)
+        self._create_loss()
         self._create_optimizer()
 
     def _create_placeholder(self):
@@ -36,17 +36,17 @@ class SR(object):
     
     def _create_loss(self):
         pass
-        x=tf.layers.conv2d(self.input,hidden_size,1,activation=tf.nn.relu,name='in')
+        x=tf.layers.conv2d(self.input,self.hidden_size,1,activation=tf.nn.relu,name='in')
         
         #low resolution
-        for i in range(6)
+        for i in range(6):
             x=utils.crop_by_pixel(x,1)+conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(i))
 
         #up sampling
         x=tf.image.resize_nearest_neighbor(x,tf.shape(x)[1:3]*2)+tf.layers.conv2d_transpose(temp,hidden_size,2,strides=2,name='up_sampling')
 
         #high resolution
-        for i in range(4)
+        for i in range(4):
             x=utils.crop_by_pixel(x,1)+conv(x,self.hidden_size,self.bottleneck_size,'hr_conv'+str(i))
         self.prediction=tf.layers.conv2d(x,3,1,name='out')
         self.loss = tf.losses.mean_squared_error(self.target, self.prediction)
@@ -64,7 +64,7 @@ class SR(object):
 
         return x
 
-    def step(self.session,input,target,training):
+    def step(self,session,input,target,training):
         input_feed={}
         input_feed[self.input.name]=input
         input_feed[self.target.name]=target

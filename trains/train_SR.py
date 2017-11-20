@@ -10,7 +10,7 @@ from models.SR import SR
 from utils import utils
 from data import data
 flags=tf.app.flags
-
+FLAGS=flags.FLAGS
 flags.DEFINE_string('data_path','/home/chenchen/data/dataset_scene/','input data path')
 flags.DEFINE_integer('iterations',100000,'number of iterations')
 flags.DEFINE_integer('batch_size','32','batch size')
@@ -31,13 +31,13 @@ flags.DEFINE_integer('bottleneck_size',64,'bottleneck size')
 #session:session
 def create_model(ckpt_path,optimizer,session):
     model=SR(
-        hidden_size=flags.hidden_size,
-        bottleneck_size=flags.bottleneck_size,
-        learning_rate=flags.learning_rate,
-        optimizer=flags.optimizer,
+        hidden_size=FLAGS.hidden_size,
+        bottleneck_size=FLAGS.bottleneck_size,
+        learning_rate=FLAGS.learning_rate,
+        optimizer=FLAGS.optimizer,
         dtype=tf.float32,
         scope='SR',
-        scale=flags.scale
+        scale=FLAGS.scale
         )
 
     ckpt=tf.train.get_checkpoint_state(ckpt_path)
@@ -51,20 +51,20 @@ def create_model(ckpt_path,optimizer,session):
     return model
 
 def train():
-    ckpt_path=flags.train_dir+'checkpoints/'
+    ckpt_path=FLAGS.train_dir+'checkpoints/'
     if not os.path.exists(ckpt_path):
         os.makedirs(ckpt_path)
     
-    dataset=data.Dataset(flags.data_path)
-    #target_batch,input_batch=dataset.get_batch(flags.batch_size)
+    dataset=data.Dataset(FLAGS.data_path)
+    #target_batch,input_batch=dataset.get_batch(FLAGS.batch_size)
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        model=create_model(ckpt_path,flags.optimizer,sess)
-        itr_print=flags.verbose
+        model=create_model(ckpt_path,FLAGS.optimizer,sess)
+        itr_print=FLAGS.verbose
         itr_save=1000
         loss=0
-        for itr in xrange(flags.iterations):
-            target_batch,input_batch=dataset.get_batch(flags.batch_size)
+        for itr in xrange(FLAGS.iterations):
+            target_batch,input_batch=dataset.get_batch(FLAGS.batch_size)
             _,training_loss=model.step(sess,input_batch,target_batch,training=True)
             loss+=training_loss
             if(itr%itr_save==0):
@@ -72,7 +72,7 @@ def train():
             if(itr%itr_print==0):
                 print 'Iteration:'+str(itr)+'Average loss:'+str(loss/itr_print)
                 loss=0
-            if(itr==(flags.iterations-1)&&itr%itr_print!=0):
+            if(itr==(FLAGS.iterations-1) and itr%itr_print!=0):
                 print 'Iteration:'+str(itr)+'Average loss:'+str(loss/(itr%itr_print))
 
 

@@ -28,7 +28,7 @@ class Dataset(object):
         pass
         lr_path=os.path.join(path,'lr.npy')
         hr_path=os.path.join(path,'hr.npy')
-        print lr_path
+        #print lr_path
         lr=np.load(lr_path)
         hr=np.load(hr_path)
         print('read data complete.')
