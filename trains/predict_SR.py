@@ -11,7 +11,8 @@ import utils.data
 import utils.utils
 flags=tf.app.flags
 
-flags.DEFINE_string('test_data_path','data/Data/','input data path')
+flags.DEFINE_string('test_data_in_path','data/Data/in.bmp','input data path')
+flags.DEFINE_string('test_data_out_path','data/Data/out.bmp','output data path')
 flags.DEFINE_integer('iterations',1000,'number of iterations')
 flags.DEFINE_integer('batch_size','32','batch size')
 flags.DEFINE_string('train_dir','ckpt/SR/','model save path')
@@ -41,14 +42,16 @@ def create_model(ckpt_path,optimizer,session):
         )
 
     ckpt=tf.train.get_checkpoint_state(ckpt_path)
+    wrong=False
     if ckpt and ckpt.model_checkpoint_path:
         print('Reading model parameters from %s.' % ckpt.model_checkpoint_path)
         model.saver.restore(session, ckpt.model_checkpoint_path)
     else:
-        print('Creating model with fresh parameters.')
-        session.run(tf.global_variables_initializer())
+        print('There is something wrong!')
+        #session.run(tf.global_variables_initializer())
+        wrong=True
 
-    return model
+    return model,wrong
 
 def train():
     ckpt_path=flags.train_dir+'checkpoints/'
@@ -59,14 +62,24 @@ def train():
     #target_batch,input_batch=dataset.get_batch(flags.batch_size)
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        model=create_model(ckpt_path,flags.optimizer,sess)
-        
+        model,wrong=create_model(ckpt_path,flags.optimizer,sess)
+        if(wrong==True):
+            return
         #_,training_loss=model.step(sess,input_batch,target_batch,training=True)
         prediction,_=model.step(sess,input_batch,target_batch,training=True)
         pass
         #TODO
+        out_im = Image.fromarray(lr.astype(np.uint8))
+        out_im.save(test_data_out_path)
+
+#input an image dir
+#output the array of the image
 def get_data(path):
     pass
+    im=im=Image.open(path)
+    data=np.array(im)
+    data-=0.5
+    return data
 
 def main(_):
     train()
