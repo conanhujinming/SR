@@ -39,15 +39,16 @@ class SR(object):
         x=tf.layers.conv2d(self.input,self.hidden_size,1,activation=tf.nn.relu,name='in')
         
         #low resolution
-        for i in range(6):
-            x=utils.crop_by_pixel(x,1)+conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(i))
-
+        for i in range(5):
+            x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(i))
+        x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(5),with_last_relu=False)
+        temp=tf.nn.relu(x)
         #up sampling
-        x=tf.image.resize_nearest_neighbor(x,tf.shape(x)[1:3]*2)+tf.layers.conv2d_transpose(temp,hidden_size,2,strides=2,name='up_sampling')
+        x=tf.image.resize_nearest_neighbor(x,tf.shape(x)[1:3]*2)+tf.layers.conv2d_transpose(temp,self.hidden_size,2,strides=2,name='up_sampling')
 
         #high resolution
         for i in range(4):
-            x=utils.crop_by_pixel(x,1)+conv(x,self.hidden_size,self.bottleneck_size,'hr_conv'+str(i))
+            x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'hr_conv'+str(i))
         self.prediction=tf.layers.conv2d(x,3,1,name='out')
         self.loss = tf.losses.mean_squared_error(self.target, self.prediction)
 
@@ -58,10 +59,12 @@ class SR(object):
             optimizer=tf.train.AdamOptimizer(self.learning_rate)
         self.updates=optimizer.minimize(self.loss,self.global_step)
 
-    def conv(x,hidden_size,bottleneck_size,name):
+    def conv(self,x,hidden_size,bottleneck_size,name,with_last_relu=True):
         x=tf.layers.conv2d(x,bottleneck_size,1,activation=tf.nn.relu,name=name+'_proj')
-        x=tf.layers.conv2d(x,hidden_size,3,activation=tf.nn.relu,name=name+'_filt')
-
+        if(with_last_relu):
+            x=tf.layers.conv2d(x,hidden_size,3,activation=tf.nn.relu,name=name+'_filt')
+        else:
+            x=tf.layers.conv2d(x,hidden_size,3,activation=None,name=name+'_filt')
         return x
 
     def step(self,session,input,target,training):
