@@ -64,7 +64,7 @@ def train():
         itr_save=1000
         loss=0
         for itr in xrange(FLAGS.iterations):
-            target_batch,input_batch=dataset.next_batch(FLAGS.batch_size)
+            input_batch,target_batch=dataset.next_batch(FLAGS.batch_size)
             _,training_loss=model.step(sess,input_batch,target_batch,training=True)
             loss+=training_loss
             if(itr%itr_save==0):
