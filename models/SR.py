@@ -51,7 +51,7 @@ class SR(object):
             x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'hr_conv'+str(i))
         self.prediction=tf.layers.conv2d(x,3,1,name='out')
         self.target_crop=utils.crop_center(self.target,tf.shape(self.prediction)[1:3])
-        self.loss = tf.losses.mean_squared_error(self.target, self.prediction)
+        self.loss = tf.losses.mean_squared_error(self.target_crop, self.prediction)
 
     def _create_optimizer(self):
         pass
