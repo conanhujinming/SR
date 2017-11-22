@@ -89,5 +89,5 @@ for parent,dirnames,filenames in os.walk(hr_path):
 print idx
 #crop data
 lr_crop,hr_crop=crop(lr,hr)
-np.save(os.path.join(rootdir,'lr'),lr)
-np.save(os.path.join(rootdir,'hr'),hr)
+np.save(os.path.join(rootdir,'lr'),lr_crop)
+np.save(os.path.join(rootdir,'hr'),hr_crop)
