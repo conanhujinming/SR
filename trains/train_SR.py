@@ -16,7 +16,7 @@ flags.DEFINE_integer('iterations',100000,'number of iterations')
 flags.DEFINE_integer('batch_size','32','batch size')
 flags.DEFINE_string('train_dir','../ckpt/SR/','model save path')
 flags.DEFINE_string('data_output_path','data/Output_data','output data path')
-flags.DEFINE_integer('verbose',10,'show performance per X iterations')
+flags.DEFINE_integer('verbose',500,'show performance per X iterations')
 flags.DEFINE_float('learning_rate','0.001','learning rate for training')
 flags.DEFINE_string('optimizer','adam','specify an optimizer: adagrad, adam, rmsprop, sgd')
 flags.DEFINE_integer('scale',2,'hr=lr*scale')
@@ -61,7 +61,7 @@ def train():
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model=create_model(ckpt_path,FLAGS.optimizer,sess)
         itr_print=FLAGS.verbose
-        itr_save=1000
+        itr_save=10000
         loss=0
         for itr in xrange(FLAGS.iterations):
             input_batch,target_batch=dataset.next_batch(FLAGS.batch_size)

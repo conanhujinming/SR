@@ -16,7 +16,7 @@ class Dataset(object):
         self.index_in_epoch+=batch_size
         if self.index_in_epoch>self.num_train:
             self.epoch+=1
-            perm=numpy.arange(self.num_train)
+            perm=np.arange(self.num_train)
             num.random.shuffle(perm)
             self.input_croped=self.input_croped[perm]
             self.target_croped=self.target_croped[perm]

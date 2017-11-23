@@ -5,3 +5,4 @@
 *.bmp
 *test_load.py
 *test_save.py
+log*
