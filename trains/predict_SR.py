@@ -2,21 +2,21 @@ import tensorflow as tf
 import numpy as np
 import os,sys
 import math
-
+from PIL import Image
 data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(data_path)
 
 from models.SR import SR
 import utils.utils
 flags=tf.app.flags
-
-flags.DEFINE_string('test_data_in_path','data/Data/in.bmp','input data path')
-flags.DEFINE_string('test_data_out_path','data/Data/out.bmp','output data path')
-flags.DEFINE_integer('iterations',1000,'number of iterations')
-flags.DEFINE_integer('batch_size','32','batch size')
-flags.DEFINE_string('train_dir','ckpt/SR/','model save path')
-flags.DEFINE_string('data_output_path','data/Output_data','output data path')
-flags.DEFINE_integer('verbose',10,'show performance per X iterations')
+FLAGS=flags.FLAGS
+flags.DEFINE_string('test_data_in_path','/home/chenchen/sr/my_sr/data/test/test.bmp','input data path')
+flags.DEFINE_string('test_data_out_path','/home/chenchen/sr/my_sr/data/test/out.bmp','output data path')
+#flags.DEFINE_integer('iterations',1000,'number of iterations')
+#flags.DEFINE_integer('batch_size','32','batch size')
+flags.DEFINE_string('train_dir','/home/chenchen/sr/my_sr/ckpt/SR/','model save path')
+#flags.DEFINE_string('data_output_path','data/Output_data','output data path')
+#flags.DEFINE_integer('verbose',10,'show performance per X iterations')
 flags.DEFINE_float('learning_rate','0.001','learning rate for training')
 flags.DEFINE_string('optimizer','adam','specify an optimizer: adagrad, adam, rmsprop, sgd')
 flags.DEFINE_integer('scale',2,'hr=lr*scale')
@@ -42,13 +42,13 @@ def get_data(path):
 #session:session
 def create_model(ckpt_path,optimizer,session):
     model=SR(
-        hidden_size=flags.hidden_size,
-        bottleneck_size=flags.bottleneck_size,
-        learning_rate=flags.learning_rate,
-        optimizer=flags.optimizer,
+        hidden_size=FLAGS.hidden_size,
+        bottleneck_size=FLAGS.bottleneck_size,
+        learning_rate=FLAGS.learning_rate,
+        optimizer=FLAGS.optimizer,
         dtype=tf.float32,
         scope='SR',
-        scale=flags.scale
+        scale=FLAGS.scale
         )
 
     ckpt=tf.train.get_checkpoint_state(ckpt_path)
@@ -64,22 +64,24 @@ def create_model(ckpt_path,optimizer,session):
     return model,wrong
 
 def train():
-    ckpt_path=flags.train_dir+'checkpoints/'
+    ckpt_path=FLAGS.train_dir+'checkpoints/'
     if not os.path.exists(ckpt_path):
         os.makedirs(ckpt_path)
     
-    data=get_data(flags.test_data_path)
+    data=get_data(FLAGS.test_data_in_path)
     #target_batch,input_batch=dataset.get_batch(flags.batch_size)
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        model,wrong=create_model(ckpt_path,flags.optimizer,sess)
+        model,wrong=create_model(ckpt_path,FLAGS.optimizer,sess)
         if(wrong==True):
             return
         #_,training_loss=model.step(sess,input_batch,target_batch,training=True)
-        prediction,_=model.step(sess,input_batch,target_batch,training=True)
+        prediction,_=model.step(sess,data,data,training=False)
         pass
-        out_im = Image.fromarray(lr.astype(np.uint8))
-        out_im.save(test_data_out_path)
+        prediction=np.reshape(prediction,prediction.shape[1:4])
+        print prediction.shape
+        out_im = Image.fromarray(prediction.astype(np.uint8))
+        out_im.save(FLAGS.test_data_out_path)
 
 
 

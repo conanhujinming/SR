@@ -68,14 +68,16 @@ class SR(object):
             x=tf.layers.conv2d(x,hidden_size,3,activation=None,name=name+'_filt')
         return x
 
-    def step(self,session,input,target,training):
+    def step(self,session,input,target,training=False):
         input_feed={}
         input_feed[self.input.name]=input
         input_feed[self.target.name]=target
         if training:
             output_feed=[self.prediction,self.loss,self.updates]
         else:
-            output_feed=[self.prediction,self.loss]
+            output_feed=[self.prediction]
 
         outputs=session.run(output_feed,input_feed)
+        if(len(outputs)==1):
+            outputs=[outputs[0],None]
         return outputs[0],outputs[1]

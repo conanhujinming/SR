@@ -17,7 +17,7 @@ class Dataset(object):
         if self.index_in_epoch>self.num_train:
             self.epoch+=1
             perm=np.arange(self.num_train)
-            num.random.shuffle(perm)
+            np.random.shuffle(perm)
             self.input_croped=self.input_croped[perm]
             self.target_croped=self.target_croped[perm]
             start=0
