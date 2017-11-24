@@ -33,6 +33,7 @@ def get_data(path):
     lr=np.zeros([1,512,512,3],dtype=np.float32)
     lr[0,:,:,:]=data
     lr-=128
+    #print lr
     return lr
 
 #input_data:lr_image
@@ -79,7 +80,7 @@ def train():
         prediction,_=model.step(sess,data,data,training=False)
         pass
         prediction=np.reshape(prediction,prediction.shape[1:4])
-        print prediction.shape
+        print prediction
         out_im = Image.fromarray(prediction.astype(np.uint8))
         out_im.save(FLAGS.test_data_out_path)
 

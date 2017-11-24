@@ -8,7 +8,7 @@ class Dataset(object):
     def __init__(self, path):
         pass
         self.input_croped,self.target_croped,self.num_train=self.read_data(path)
-        self.input_croped-=128
+        #self.input_croped-=128
         self.epoch=0
         self.index_in_epoch=0
     def next_batch(self,batch_size):

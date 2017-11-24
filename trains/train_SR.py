@@ -13,7 +13,7 @@ flags=tf.app.flags
 FLAGS=flags.FLAGS
 flags.DEFINE_string('data_path','/home/chenchen/data/dataset_scene/','input data path')
 flags.DEFINE_integer('iterations',100000,'number of iterations')
-flags.DEFINE_integer('batch_size','32','batch size')
+flags.DEFINE_integer('batch_size','64','batch size')
 flags.DEFINE_string('train_dir','../ckpt/SR/','model save path')
 flags.DEFINE_string('data_output_path','data/Output_data','output data path')
 flags.DEFINE_integer('verbose',500,'show performance per X iterations')
@@ -35,7 +35,7 @@ def create_model(ckpt_path,optimizer,session):
         bottleneck_size=FLAGS.bottleneck_size,
         learning_rate=FLAGS.learning_rate,
         optimizer=FLAGS.optimizer,
-        dtype=tf.float32,
+        dtype=tf.float16,
         scope='SR',
         scale=FLAGS.scale
         )

@@ -9,8 +9,8 @@ def crop(lr_in,hr_in):
         height=108
         width=108
         overlap=12
-        hr=tf.placeholder(tf.float32,shape=[None,1024,1024,3])
-        lr=tf.placeholder(tf.float32,shape=[None,512,512,3])
+        hr=tf.placeholder(tf.float16,shape=[None,1024,1024,3])
+        lr=tf.placeholder(tf.float16,shape=[None,512,512,3])
         print 'hello'
         hr_crop = tf.extract_image_patches(hr, [1, height, width, 1], [1, height - 2 * overlap, width - 2 * overlap, 1], [1, 1, 1, 1], padding='VALID')
         hr_reshape=tf.reshape(hr_crop, [tf.shape(hr_crop)[0] * tf.shape(hr_crop)[1] * tf.shape(hr_crop)[2], height, width, 3])
@@ -33,8 +33,8 @@ for parent,dirnames,filenames in os.walk(lr_path):
         num+=1
     print num
 #hr=np.zeros(num*8,1000,1000,3)
-lr=np.zeros([num*8,512,512,3],dtype=np.float32)
-hr=np.zeros([num*8,1024,1024,3],dtype=np.float32)
+lr=np.zeros([num*8,512,512,3],dtype=np.float16)
+hr=np.zeros([num*8,1024,1024,3],dtype=np.float16)
 #read_data
 for parent,dirnames,filenames in os.walk(lr_path):
     filenames.sort()
@@ -88,6 +88,14 @@ for parent,dirnames,filenames in os.walk(hr_path):
             #print idx
 print idx
 #crop data
-lr_crop,hr_crop=crop(lr,hr)
+for i in xrange(32):
+    num=lr.shape[0]/32
+    if(i==0):
+        lr_crop,hr_crop=crop(lr[0:num],hr[0:num])
+    else:
+        lr_temp,hr_temp=crop(lr[i*num:(i+1)*num],hr[i*num:(i+1)*num])
+        lr_crop=np.concatenate((lr_crop,lr_temp),axis=0)
+        hr_crop=np.concatenate((hr_crop,hr_temp),axis=0)
+    print i
 np.save(os.path.join(rootdir,'lr'),lr_crop)
 np.save(os.path.join(rootdir,'hr'),hr_crop)

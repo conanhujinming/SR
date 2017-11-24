@@ -6,7 +6,7 @@ class SR(object):
                  bottleneck_size,
                  learning_rate,
                  optimizer='adam',
-                 dtype=tf.float32,
+                 dtype=tf.float16,
                  scope='SR',
                  scale=2
                 ):
@@ -31,8 +31,8 @@ class SR(object):
 
     def _create_placeholder(self):
         pass
-        self.input=tf.placeholder(tf.float32,[None,None,None,3],name='input')
-        self.target=tf.placeholder(tf.float32,[None,None,None,3],name='output')
+        self.input=tf.placeholder(self.dtype,[None,None,None,3],name='input')
+        self.target=tf.placeholder(self.dtype,[None,None,None,3],name='output')
     
     def _create_loss(self):
         pass
