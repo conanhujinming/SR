@@ -88,6 +88,8 @@ for parent,dirnames,filenames in os.walk(hr_path):
             #print idx
 print idx
 #crop data
+lr_crop=None
+hr_crop=None
 for i in xrange(32):
     num=lr.shape[0]/32
     if(i==0):

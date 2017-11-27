@@ -8,3 +8,7 @@ def crop_by_pixel(x,num):
 def crop_center(image, target_shape):
     origin_shape = tf.shape(image)[1:3]
     return tf.slice(image, [0, (origin_shape[0] - target_shape[0]) / 2, (origin_shape[1] - target_shape[1]) / 2, 0], [-1, target_shape[0], target_shape[1], -1])
+
+#c1,c2:[None,None,3]
+def get_C3C4(c1,c2):
+	pass

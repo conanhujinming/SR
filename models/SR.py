@@ -17,7 +17,7 @@ class SR(object):
         self.dtype=dtype
         self.scale=scale
         with tf.variable_scope(scope):
-            self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=dtype, name='learning_rate')
+            self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=self.dtype, name='learning_rate')
             self.global_step = tf.Variable(0, trainable=False, dtype=tf.int32, name='global_step')
 
             self.build_graph()

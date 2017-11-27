@@ -30,7 +30,7 @@ def get_data(path):
     pass
     im=im=Image.open(path)
     data=np.array(im)
-    lr=np.zeros([1,512,512,3],dtype=np.float32)
+    lr=np.zeros([1,512,512,3],dtype=np.float16)
     lr[0,:,:,:]=data
     lr-=128
     #print lr
@@ -47,7 +47,7 @@ def create_model(ckpt_path,optimizer,session):
         bottleneck_size=FLAGS.bottleneck_size,
         learning_rate=FLAGS.learning_rate,
         optimizer=FLAGS.optimizer,
-        dtype=tf.float32,
+        dtype=tf.float16,
         scope='SR',
         scale=FLAGS.scale
         )
@@ -65,7 +65,7 @@ def create_model(ckpt_path,optimizer,session):
     return model,wrong
 
 def train():
-    ckpt_path=FLAGS.train_dir+'checkpoints/'
+    ckpt_path=FLAGS.train_dir
     if not os.path.exists(ckpt_path):
         os.makedirs(ckpt_path)
     

@@ -16,8 +16,8 @@ flags.DEFINE_integer('iterations',100000,'number of iterations')
 flags.DEFINE_integer('batch_size','64','batch size')
 flags.DEFINE_string('train_dir','../ckpt/SR/','model save path')
 flags.DEFINE_string('data_output_path','data/Output_data','output data path')
-flags.DEFINE_integer('verbose',500,'show performance per X iterations')
-flags.DEFINE_float('learning_rate','0.001','learning rate for training')
+flags.DEFINE_integer('verbose',1,'show performance per X iterations')
+flags.DEFINE_float('learning_rate','0.000001','learning rate for training')
 flags.DEFINE_string('optimizer','adam','specify an optimizer: adagrad, adam, rmsprop, sgd')
 flags.DEFINE_integer('scale',2,'hr=lr*scale')
 
@@ -51,7 +51,7 @@ def create_model(ckpt_path,optimizer,session):
     return model
 
 def train():
-    ckpt_path=FLAGS.train_dir+'checkpoints/'
+    ckpt_path=FLAGS.train_dir
     if not os.path.exists(ckpt_path):
         os.makedirs(ckpt_path)
     
@@ -61,14 +61,15 @@ def train():
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model=create_model(ckpt_path,FLAGS.optimizer,sess)
         itr_print=FLAGS.verbose
-        itr_save=10000
+        itr_save=4000
         loss=0
         for itr in xrange(FLAGS.iterations):
-            input_batch,target_batch=dataset.next_batch(FLAGS.batch_size)
+            if itr==0:
+                input_batch,target_batch=dataset.next_batch(FLAGS.batch_size)
             _,training_loss=model.step(sess,input_batch,target_batch,training=True)
             loss+=training_loss
-            if(itr%itr_save==0):
-                model.saver.save(sess,ckpt_path+'train',model.global_step)
+            #if(itr%itr_save==0):
+            #    model.saver.save(sess,ckpt_path+'train',model.global_step)
             if(itr%itr_print==0):
                 print 'Iteration:'+str(itr)+'Average loss:'+str(loss/itr_print)
                 loss=0
