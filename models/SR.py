@@ -36,12 +36,11 @@ class SR(object):
     
     def _create_loss(self):
         pass
-        x=tf.layers.conv2d(self.input,self.hidden_size,1,activation=tf.nn.relu,name='in')
+        x=tf.layers.conv2d(self.input,self.hidden_size,1,activation=None,name='in')
         
         #low resolution
-        for i in range(5):
+        for i in range(6):
             x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(i))
-        x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(5),with_last_relu=False)
         temp=tf.nn.relu(x)
         #up sampling
         x=tf.image.resize_nearest_neighbor(x,tf.shape(x)[1:3]*2)+tf.layers.conv2d_transpose(temp,self.hidden_size,2,strides=2,name='up_sampling')
@@ -49,6 +48,7 @@ class SR(object):
         #high resolution
         for i in range(4):
             x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'hr_conv'+str(i))
+        x=tf.nn.relu(x)
         self.prediction=tf.layers.conv2d(x,3,1,name='out')
         self.target_crop=utils.crop_center(self.target,tf.shape(self.prediction)[1:3])
         self.loss = tf.losses.mean_squared_error(self.target_crop, self.prediction)
@@ -61,11 +61,9 @@ class SR(object):
         self.updates=optimizer.minimize(self.loss,self.global_step)
 
     def conv(self,x,hidden_size,bottleneck_size,name,with_last_relu=True):
+        x=tf.nn.relu(x)
         x=tf.layers.conv2d(x,bottleneck_size,1,activation=tf.nn.relu,name=name+'_proj')
-        if(with_last_relu):
-            x=tf.layers.conv2d(x,hidden_size,3,activation=tf.nn.relu,name=name+'_filt')
-        else:
-            x=tf.layers.conv2d(x,hidden_size,3,activation=None,name=name+'_filt')
+        x=tf.layers.conv2d(x,hidden_size,3,activation=None,name=name+'_filt')
         return x
 
     def step(self,session,input,target,training=False):
