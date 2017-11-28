@@ -6,7 +6,7 @@ class SR(object):
                  bottleneck_size,
                  learning_rate,
                  optimizer='adam',
-                 dtype=tf.float16,
+                 dtype=tf.float32,
                  scope='SR',
                  scale=2
                 ):
@@ -17,7 +17,7 @@ class SR(object):
         self.dtype=dtype
         self.scale=scale
         with tf.variable_scope(scope):
-            self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=self.dtype, name='learning_rate')
+            self.learning_rate = tf.Variable(learning_rate, trainable=False, dtype=self.dtype, name='learning_rate')
             self.global_step = tf.Variable(0, trainable=False, dtype=tf.int32, name='global_step')
 
             self.build_graph()
@@ -37,7 +37,7 @@ class SR(object):
     def _create_loss(self):
         pass
         x=tf.layers.conv2d(self.input,self.hidden_size,1,activation=None,name='in')
-        
+        #self.test=tf.reduce_mean(x)
         #low resolution
         for i in range(6):
             x=utils.crop_by_pixel(x,1)+self.conv(x,self.hidden_size,self.bottleneck_size,'lr_conv'+str(i))
@@ -51,8 +51,11 @@ class SR(object):
         x=tf.nn.relu(x)
         self.prediction=tf.layers.conv2d(x,3,1,name='out')
         self.target_crop=utils.crop_center(self.target,tf.shape(self.prediction)[1:3])
+        #self.test=tf.reduce_mean(self.prediction)
+        #self.test=tf.reduce_mean(self.prediction)
         self.loss = tf.losses.mean_squared_error(self.target_crop, self.prediction)
-
+        #self.loss = tf.losses.log_loss(self.target_crop, self.prediction)
+        #self.loss = tf.losses.absolute_difference(self.target_crop, self.prediction)
     def _create_optimizer(self):
         pass
         #you can put more optimizer here

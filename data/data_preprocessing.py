@@ -9,8 +9,8 @@ def crop(lr_in,hr_in):
         height=108
         width=108
         overlap=12
-        hr=tf.placeholder(tf.float16,shape=[None,1024,1024,3])
-        lr=tf.placeholder(tf.float16,shape=[None,512,512,3])
+        hr=tf.placeholder(tf.float32,shape=[None,1024,1024,3])
+        lr=tf.placeholder(tf.float32,shape=[None,512,512,3])
         print 'hello'
         hr_crop = tf.extract_image_patches(hr, [1, height, width, 1], [1, height - 2 * overlap, width - 2 * overlap, 1], [1, 1, 1, 1], padding='VALID')
         hr_reshape=tf.reshape(hr_crop, [tf.shape(hr_crop)[0] * tf.shape(hr_crop)[1] * tf.shape(hr_crop)[2], height, width, 3])
@@ -33,8 +33,8 @@ for parent,dirnames,filenames in os.walk(lr_path):
         num+=1
     print num
 #hr=np.zeros(num*8,1000,1000,3)
-lr=np.zeros([num*8,512,512,3],dtype=np.float16)
-hr=np.zeros([num*8,1024,1024,3],dtype=np.float16)
+lr=np.zeros([num*8,512,512,3],dtype=np.float32)
+hr=np.zeros([num*8,1024,1024,3],dtype=np.float32)
 #read_data
 for parent,dirnames,filenames in os.walk(lr_path):
     filenames.sort()

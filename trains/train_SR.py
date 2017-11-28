@@ -13,11 +13,11 @@ flags=tf.app.flags
 FLAGS=flags.FLAGS
 flags.DEFINE_string('data_path','/home/chenchen/data/dataset_scene/','input data path')
 flags.DEFINE_integer('iterations',100000,'number of iterations')
-flags.DEFINE_integer('batch_size','64','batch size')
+flags.DEFINE_integer('batch_size',64,'batch size')
 flags.DEFINE_string('train_dir','../ckpt/SR/','model save path')
 flags.DEFINE_string('data_output_path','data/Output_data','output data path')
-flags.DEFINE_integer('verbose',1,'show performance per X iterations')
-flags.DEFINE_float('learning_rate','0.000001','learning rate for training')
+flags.DEFINE_integer('verbose',100,'show performance per X iterations')
+flags.DEFINE_float('learning_rate',0.001,'learning rate for training')
 flags.DEFINE_string('optimizer','adam','specify an optimizer: adagrad, adam, rmsprop, sgd')
 flags.DEFINE_integer('scale',2,'hr=lr*scale')
 
@@ -35,7 +35,7 @@ def create_model(ckpt_path,optimizer,session):
         bottleneck_size=FLAGS.bottleneck_size,
         learning_rate=FLAGS.learning_rate,
         optimizer=FLAGS.optimizer,
-        dtype=tf.float16,
+        dtype=tf.float32,
         scope='SR',
         scale=FLAGS.scale
         )
@@ -61,20 +61,22 @@ def train():
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model=create_model(ckpt_path,FLAGS.optimizer,sess)
         itr_print=FLAGS.verbose
-        itr_save=4000
+        itr_save=5000
         loss=0
         for itr in xrange(FLAGS.iterations):
-            if itr==0:
-                input_batch,target_batch=dataset.next_batch(FLAGS.batch_size)
+        #for itr in xrange(20):
+            #if itr==0:
+            input_batch,target_batch=dataset.next_batch(FLAGS.batch_size)
             _,training_loss=model.step(sess,input_batch,target_batch,training=True)
             loss+=training_loss
-            #if(itr%itr_save==0):
-            #    model.saver.save(sess,ckpt_path+'train',model.global_step)
-            if(itr%itr_print==0):
-                print 'Iteration:'+str(itr)+'Average loss:'+str(loss/itr_print)
+            if(itr%itr_save==0 and itr!=0):
+                model.saver.save(sess,ckpt_path+'train',model.global_step)
+            if(itr%itr_print==0 and itr!=0):
+                #print 'Iteration:'+str(itr)+' test:'+str(test)
+                print 'Iteration:'+str(itr)+' Average loss:'+str(loss/itr_print)
                 loss=0
             if(itr==(FLAGS.iterations-1) and itr%itr_print!=0):
-                print 'Iteration:'+str(itr)+'Average loss:'+str(loss/(itr%itr_print))
+                print 'Iteration:'+str(itr)+' Average loss:'+str(loss/(itr%itr_print))
 
 
 
